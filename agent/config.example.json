@@ -1,0 +1,7 @@
+{
+  "server": "http://localhost:8000",
+  "node_id": 1,
+  "token": "aid_REPLACE_WITH_TOKEN",
+  "interval": 5,
+  "log_level": "INFO"
+}
