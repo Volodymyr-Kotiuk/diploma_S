@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { Plus } from 'lucide-svelte';
   import Button from '$lib/components/ui/Button.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
   import EmptyState from '$lib/components/ui/EmptyState.svelte';
   import LoadingSkeleton from '$lib/components/ui/LoadingSkeleton.svelte';
   import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
@@ -50,26 +50,21 @@
 {#if loading}
   <LoadingSkeleton rows={5} />
 {:else if error}
-  <Card><p class="text-sm text-rose-600">{error}</p></Card>
+  <div class="border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
 {:else}
-  <section class="border-b border-line pb-5">
-    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h1 class="text-lg font-semibold text-slate-950">Додати обчислювальний вузол</h1>
-        
-      </div>
-      <a href="/nodes/add"><Button>Перейти до створення вузла</Button></a>
+  <section class="pt-6">
+    <h1 class="m-0 text-[32px] font-bold leading-tight text-[#111827]">Обчислювальні вузли</h1>
+    <div class="mt-8">
+      <a href="/nodes/add">
+        <Button className="h-[43px] rounded-md px-5 text-[17px]">
+          <Plus class="h-5 w-5" />
+          Додати вузол
+        </Button>
+      </a>
     </div>
   </section>
 
-  <Card className="mt-5">
-    <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h2 class="text-base font-semibold text-slate-950">Додані обчислювальні вузли</h2>
-        
-      </div>
-    </div>
-
+  <section class="mt-8 border-t border-[#d7dde6]">
     {#if nodes.length === 0}
       <EmptyState
         title="Вузли ще не додані"
@@ -81,35 +76,35 @@
       </EmptyState>
     {:else}
       <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="border-y border-line bg-slate-50 text-left text-xs font-semibold uppercase tracking-normal text-slate-700">
+        <table class="min-w-full text-[17px]">
+          <thead class="text-left text-[16px] font-bold text-[#111827]">
             <tr>
-              <th class="px-3 py-2">Назва</th>
-              <th class="px-3 py-2">Тип</th>
-              <th class="px-3 py-2">Статус</th>
-              <th class="px-3 py-2">CPU</th>
-              <th class="px-3 py-2">RAM</th>
-              <th class="px-3 py-2">Останнє оновлення</th>
-              <th class="px-3 py-2 text-right">Дія</th>
+              <th class="border-b border-[#d7dde6] px-4 py-6">Назва</th>
+              <th class="border-b border-[#d7dde6] px-4 py-6">Тип</th>
+              <th class="border-b border-[#d7dde6] px-4 py-6">Статус</th>
+              <th class="border-b border-[#d7dde6] px-4 py-6 text-left">CPU</th>
+              <th class="border-b border-[#d7dde6] px-4 py-6 text-left">RAM</th>
+              <th class="border-b border-[#d7dde6] px-4 py-6">Останнє оновлення</th>
+              <th class="border-b border-[#d7dde6] px-4 py-6 text-center">Дії</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-line">
+          <tbody>
             {#each nodes as node}
               {@const latest = latestByNode[node.id]}
               <tr>
-                <td class="px-3 py-3">
-                  <a class="font-medium text-brand-700" href={`/nodes/${node.id}`}>{node.name}</a>
+                <td class="border-b border-[#d7dde6] px-4 py-5 align-middle">
+                  <a class="font-bold text-[#0f4fd8]" href={`/nodes/${node.id}`}>{node.name}</a>
                   {#if node.description}
-                    <p class="mt-1 max-w-[360px] truncate text-xs text-slate-600">{node.description}</p>
+                    <p class="mt-1 max-w-[360px] truncate text-xs text-slate-500">{node.description}</p>
                   {/if}
                 </td>
-                <td class="px-3 py-3 text-slate-700">{typeLabel(node.node_type)}</td>
-                <td class="px-3 py-3"><StatusBadge status={node.status} /></td>
-                <td class="px-3 py-3 text-slate-800">{latest ? percent(latest.cpu_usage_percent) : '—'}</td>
-                <td class="px-3 py-3 text-slate-800">{latest ? percent(latest.ram_usage_percent) : '—'}</td>
-                <td class="px-3 py-3 text-slate-700">{shortDate(latest?.timestamp || node.last_heartbeat_at)}</td>
-                <td class="px-3 py-3">
-                  <div class="flex justify-end gap-2">
+                <td class="border-b border-[#d7dde6] px-4 py-5 align-middle text-[#111827]">{typeLabel(node.node_type)}</td>
+                <td class="border-b border-[#d7dde6] px-4 py-5 align-middle"><StatusBadge status={node.status} /></td>
+                <td class="border-b border-[#d7dde6] px-4 py-5 align-middle tabular-nums text-[#111827]">{latest ? percent(latest.cpu_usage_percent) : '—'}</td>
+                <td class="border-b border-[#d7dde6] px-4 py-5 align-middle tabular-nums text-[#111827]">{latest ? percent(latest.ram_usage_percent) : '—'}</td>
+                <td class="border-b border-[#d7dde6] px-4 py-5 align-middle text-[#111827]">{shortDate(latest?.timestamp || node.last_heartbeat_at)}</td>
+                <td class="border-b border-[#d7dde6] px-4 py-5 align-middle">
+                  <div class="flex justify-center gap-3 whitespace-nowrap">
                     <a href={`/nodes/${node.id}`}><Button size="sm" variant="secondary">Відкрити</Button></a>
                     <Button size="sm" variant="danger" on:click={() => removeNode(node.id)}>Видалити</Button>
                   </div>
@@ -120,5 +115,5 @@
         </table>
       </div>
     {/if}
-  </Card>
+  </section>
 {/if}

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import PageHeader from '$lib/components/layout/PageHeader.svelte';
   import Button from '$lib/components/ui/Button.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
+  import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
   import { nodesApi } from '$lib/api/nodes';
   import { recommendationsApi } from '$lib/api/recommendations';
   import { pushToast } from '$lib/stores/app';
@@ -19,13 +19,6 @@
     critical: 'критичний'
   };
 
-  const statusLabels: Record<string, string> = {
-    new: 'нова',
-    accepted: 'прийнята',
-    ignored: 'проігнорована',
-    resolved: 'закрита'
-  };
-
   const typeLabels: Record<string, string> = {
     vertical_cpu_scaling: 'збільшення CPU',
     vertical_ram_scaling: 'збільшення RAM',
@@ -38,12 +31,6 @@
     overcommit_optimization: 'оптимізація перевиділення',
     no_scaling_recommended: 'масштабування не рекомендовано'
   };
-
-  function priorityClass(priority: string) {
-    if (priority === 'critical' || priority === 'high') return 'text-red-700';
-    if (priority === 'medium') return 'text-amber-700';
-    return 'text-emerald-700';
-  }
 
   async function load() {
     [recommendations, nodes] = await Promise.all([recommendationsApi.list(), nodesApi.list()]);
@@ -58,38 +45,41 @@
 
 <PageHeader title="Рекомендації масштабування" />
 
-<div class="grid gap-3 xl:grid-cols-2">
+<section class="rounded-lg border border-[#d7dde6] bg-white p-5">
   {#each recommendations as rec}
-    <Card>
-      <div class="flex items-start justify-between gap-3 border-b border-line pb-3">
+    <div class="border-b border-[#e5e9f0] py-4 first:pt-0 last:border-b-0 last:pb-0">
+      <div class="flex items-start justify-between gap-4">
         <div>
           <h2 class="text-base font-semibold text-slate-950">{rec.title}</h2>
-          <p class="mt-1 text-sm text-slate-700">{nodeNames[rec.node_id] || rec.node_id} · {typeLabels[rec.recommendation_type] || rec.recommendation_type} · {statusLabels[rec.status] || rec.status}</p>
+          <p class="mt-1 text-sm text-slate-600">{nodeNames[rec.node_id] || rec.node_id} · {typeLabels[rec.recommendation_type] || rec.recommendation_type}</p>
         </div>
-        <span class={`text-sm font-medium ${priorityClass(rec.priority)}`}>{priorityLabels[rec.priority] || rec.priority}</span>
+        <div class="flex flex-col items-end gap-2 text-sm">
+          <span class="font-medium text-[#1f2937]">{priorityLabels[rec.priority] || rec.priority}</span>
+          <StatusBadge status={rec.status} />
+        </div>
       </div>
       <div class="mt-3 grid gap-3 text-sm md:grid-cols-2">
         <div>
           <p class="font-semibold text-slate-900">Причина</p>
-          <p class="mt-1 text-slate-700">{rec.reason}</p>
+          <p class="mt-1 text-slate-600">{rec.reason}</p>
         </div>
         <div>
           <p class="font-semibold text-slate-900">Поточний стан</p>
-          <p class="mt-1 text-slate-700">CPU: {rec.current_cpu_cores ?? '—'} ядер · RAM: {rec.current_ram_mb ? Math.round(rec.current_ram_mb / 1024) : '—'} GB</p>
+          <p class="mt-1 text-slate-600">CPU: {rec.current_cpu_cores ?? '—'} ядер · RAM: {rec.current_ram_mb ? Math.round(rec.current_ram_mb / 1024) : '—'} GB</p>
         </div>
         <div>
           <p class="font-semibold text-slate-900">Рекомендована дія</p>
-          <p class="mt-1 text-slate-700">{rec.description}</p>
+          <p class="mt-1 text-slate-600">{rec.description}</p>
         </div>
         <div>
           <p class="font-semibold text-slate-900">Очікуваний ефект</p>
-          <p class="mt-1 text-slate-700">{rec.expected_effect}</p>
+          <p class="mt-1 text-slate-600">{rec.expected_effect}</p>
         </div>
       </div>
       {#if Array.isArray(rec.action_steps_json)}
-        <ul class="mt-4 space-y-2 text-sm text-slate-700">
+        <ul class="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
           {#each rec.action_steps_json as action}
-            <li class="rounded border border-line bg-slate-50 p-2">{action}</li>
+            <li>{action}</li>
           {/each}
         </ul>
       {/if}
@@ -98,6 +88,6 @@
         <Button size="sm" variant="ghost" on:click={() => setStatus(rec.id, 'ignore')}>Ігнорувати</Button>
         <Button size="sm" variant="ghost" on:click={() => setStatus(rec.id, 'resolve')}>Закрити</Button>
       </div>
-    </Card>
+    </div>
   {/each}
-</div>
+</section>

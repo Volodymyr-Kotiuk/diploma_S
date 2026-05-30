@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import PageHeader from '$lib/components/layout/PageHeader.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
   import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
   import { incidentsApi } from '$lib/api/incidents';
   import { nodesApi } from '$lib/api/nodes';
@@ -50,15 +49,33 @@
 
 <PageHeader title="Інциденти" />
 
-<Card padded={false}>
+<section class="rounded-lg border border-[#d7dde6] bg-white p-6">
   <div class="overflow-x-auto">
     <table class="min-w-full text-sm">
-      <thead class="bg-slate-100 text-left text-xs uppercase tracking-normal text-slate-700"><tr><th class="px-4 py-3">Час</th><th>Вузол</th><th>Тип</th><th>Рівень</th><th>Причина</th><th>Статус</th><th>Дія</th></tr></thead>
-      <tbody class="divide-y divide-slate-200">
+      <thead class="bg-[#f8fafc] text-left text-xs font-bold uppercase tracking-[0.04em] text-[#475569]">
+        <tr>
+          <th class="border-b border-[#e5e9f0] px-[14px] py-3">Час</th>
+          <th class="border-b border-[#e5e9f0] px-[14px] py-3">Вузол</th>
+          <th class="border-b border-[#e5e9f0] px-[14px] py-3">Тип</th>
+          <th class="border-b border-[#e5e9f0] px-[14px] py-3">Рівень</th>
+          <th class="border-b border-[#e5e9f0] px-[14px] py-3">Причина</th>
+          <th class="border-b border-[#e5e9f0] px-[14px] py-3">Статус</th>
+          <th class="border-b border-[#e5e9f0] px-[14px] py-3 text-right">Дія</th>
+        </tr>
+      </thead>
+      <tbody>
         {#each incidents as incident}
-          <tr><td class="px-4 py-3 text-slate-700">{shortDate(incident.started_at)}</td><td class="font-medium">{nodeNames[incident.node_id] || incident.node_id}</td><td>{typeLabels[incident.incident_type] || incident.incident_type}</td><td>{severityLabels[incident.severity] || incident.severity}</td><td class="font-medium">{incident.root_cause ? rootCauseLabels[incident.root_cause] || incident.root_cause : '—'}</td><td><StatusBadge status={incident.status} /></td><td><a class="font-medium text-brand-700" href={`/nodes/${incident.node_id}`}>Вузол</a></td></tr>
+          <tr>
+            <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle text-[#475569]">{shortDate(incident.started_at)}</td>
+            <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle font-semibold text-[#111827]">{nodeNames[incident.node_id] || incident.node_id}</td>
+            <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle text-[#1f2937]">{typeLabels[incident.incident_type] || incident.incident_type}</td>
+            <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle text-[#1f2937]">{severityLabels[incident.severity] || incident.severity}</td>
+            <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle font-medium text-[#111827]">{incident.root_cause ? rootCauseLabels[incident.root_cause] || incident.root_cause : '—'}</td>
+            <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle"><StatusBadge status={incident.status} /></td>
+            <td class="border-b border-[#e5e9f0] px-[14px] py-4 text-right align-middle"><a class="font-medium text-[#1d4ed8]" href={`/nodes/${incident.node_id}`}>Вузол</a></td>
+          </tr>
         {/each}
       </tbody>
     </table>
   </div>
-</Card>
+</section>
