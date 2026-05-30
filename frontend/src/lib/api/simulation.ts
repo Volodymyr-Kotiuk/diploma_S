@@ -2,7 +2,7 @@ import { api, post } from './client';
 import type { Environment, SimulationScenario } from '$lib/types';
 
 export const simulationApi = {
-  demo: (name = 'Demo Virtual Cluster') => post<Environment>('/simulation/environments/demo', { name }),
+  demo: (name = 'Демонстраційний віртуальний кластер') => post<Environment>('/simulation/environments/demo', { name }),
   createScenario: (payload: {
     environment_id: number;
     target_node_id?: number | null;

@@ -6,28 +6,28 @@ export default {
     extend: {
       colors: {
         ink: '#111827',
-        surface: '#f5f6f8',
+        surface: '#f3f5f8',
         graphite: '#1f2937',
         console: '#111827',
         paper: '#ffffff',
-        line: '#cbd5e1',
+        line: '#d7dde6',
         brand: {
-          50: '#eff6ff',
-          500: '#1d4ed8',
-          600: '#1e40af',
-          700: '#1e3a8a'
+          50: '#eef2ff',
+          500: '#2F4FDC',
+          600: '#2946c7',
+          700: '#233cae'
         },
         signal: {
-          green: '#16a34a',
-          amber: '#ca8a04',
+          green: '#22A06B',
+          amber: '#D97706',
           red: '#dc2626',
-          blue: '#2563eb',
+          blue: '#2F4FDC',
           cyan: '#0891b2'
         }
       },
       boxShadow: {
-        panel: 'none',
-        insetline: 'inset 4px 0 0 rgba(37, 99, 235, 0.95)'
+        panel: '0 1px 2px rgba(15, 23, 42, 0.04)',
+        insetline: 'inset 3px 0 0 rgba(47, 79, 220, 0.95)'
       }
     }
   },

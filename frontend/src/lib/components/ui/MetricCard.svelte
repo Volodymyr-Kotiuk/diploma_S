@@ -6,19 +6,19 @@
   export let progress: number | null = null;
 </script>
 
-<section class="min-h-[104px] rounded bg-white p-3 ring-1 ring-slate-200/70">
+<section class="min-h-[96px] rounded-lg border border-[#d7dde6] bg-white p-4 shadow-panel">
   <div class="flex items-start justify-between gap-4">
     <div>
-      <p class="text-xs font-semibold uppercase text-slate-600">{label}</p>
-      <p class="mt-1 text-2xl font-semibold tracking-normal text-slate-950">{value}</p>
+      <p class="text-[11px] font-semibold uppercase text-slate-500">{label}</p>
+      <p class="mt-1 text-[23px] font-semibold leading-tight tracking-normal text-slate-950">{value}</p>
     </div>
   </div>
   {#if progress !== null}
-    <div class="mt-3 h-2 rounded-sm bg-slate-200">
-      <div class={`h-2 rounded-sm ${accent}`} style={`width: ${Math.min(Math.max(progress, 0), 100)}%`}></div>
+    <div class="mt-3 h-1.5 rounded-full bg-slate-100">
+      <div class={`h-1.5 rounded-full ${accent}`} style={`width: ${Math.min(Math.max(progress, 0), 100)}%`}></div>
     </div>
   {/if}
   {#if helper}
-    <p class="mt-2 text-sm text-slate-700">{helper}</p>
+    <p class="mt-2 text-xs text-slate-500">{helper}</p>
   {/if}
 </section>

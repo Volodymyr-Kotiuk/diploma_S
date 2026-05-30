@@ -123,7 +123,7 @@ def load_config(path: str | None) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="AutoInfraDiag remote metrics agent")
     parser.add_argument("--config", help="Optional JSON config path")
-    parser.add_argument("--server", help="Backend root URL, for example https://backend.example.com")
+    parser.add_argument("--server", help="Backend root URL, for example https://domain.com")
     parser.add_argument("--token", help="Agent token")
     parser.add_argument("--node-id", type=int, help="Node id")
     parser.add_argument("--interval", type=int, default=5, help="Metrics interval in seconds")

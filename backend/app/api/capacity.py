@@ -13,7 +13,7 @@ router = APIRouter(prefix="/capacity", tags=["capacity"])
 @router.post("/run/{node_id}", response_model=list[CapacityForecastRead])
 def run_capacity(node_id: int, db: Session = Depends(get_db)):
     if not db.get(models.Node, node_id):
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     return run_capacity_planning(db, node_id)
 
 

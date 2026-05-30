@@ -4,7 +4,7 @@
 </script>
 
 <section
-  class={`ops-panel rounded ${padded ? 'p-4' : ''} ${className}`}
+  class={`ops-panel rounded-lg ${padded ? 'p-5' : ''} ${className}`}
 >
   <slot />
 </section>

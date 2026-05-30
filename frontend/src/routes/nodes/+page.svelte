@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import PageHeader from '$lib/components/layout/PageHeader.svelte';
   import Button from '$lib/components/ui/Button.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
   import EmptyState from '$lib/components/ui/EmptyState.svelte';
   import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
   import { incidentsApi } from '$lib/api/incidents';
@@ -24,7 +23,7 @@
   }, {});
 
   function typeLabel(type: string) {
-    return type === 'remote_agent' ? 'Агент' : 'Віртуальний';
+    return type === 'remote_agent' ? 'Реальний вузол' : 'Віртуальний вузол';
   }
 
   async function load() {
@@ -52,10 +51,10 @@
   <a slot="actions" href="/nodes/add"><Button>Додати вузол</Button></a>
 </PageHeader>
 
-<Card className="mb-4">
+<section class="mb-6 rounded-lg border border-[#d7dde6] bg-white p-5">
   <div class="grid gap-3 md:grid-cols-[1fr_180px_180px_auto]">
-    <input class="h-9 rounded border border-slate-200 bg-white px-3 text-sm" bind:value={search} placeholder="Пошук вузла" />
-    <select bind:value={status} class="h-9 rounded border border-slate-200 bg-white px-3 text-sm">
+    <input class="h-10 rounded-md border border-[#cbd5e1] bg-white px-3 text-[15px]" bind:value={search} placeholder="Пошук вузла" />
+    <select bind:value={status} class="h-10 rounded-md border border-[#cbd5e1] bg-white px-3 text-[15px]">
       <option value="">Усі статуси</option>
       <option value="waiting">очікує</option>
       <option value="online">онлайн</option>
@@ -64,50 +63,50 @@
       <option value="critical">критичний</option>
       <option value="offline">офлайн</option>
     </select>
-    <select bind:value={nodeType} class="h-9 rounded border border-slate-200 bg-white px-3 text-sm">
+    <select bind:value={nodeType} class="h-10 rounded-md border border-[#cbd5e1] bg-white px-3 text-[15px]">
       <option value="">Усі типи</option>
       <option value="remote_agent">Реальний вузол</option>
       <option value="virtual_node">Віртуальний вузол</option>
     </select>
     <Button on:click={load}>Фільтрувати</Button>
   </div>
-</Card>
+</section>
 
 {#if nodes.length === 0}
   <EmptyState title="Додайте вузол" text="Підключіть реальну машину для збору метрик або створіть віртуальний вузол для тестового сценарію." />
 {:else}
-  <Card padded={false}>
+  <section class="rounded-lg border border-[#d7dde6] bg-white p-6">
     <div class="overflow-x-auto">
       <table class="min-w-full text-sm">
-        <thead class="bg-slate-100 text-left text-xs uppercase tracking-normal text-slate-700">
+        <thead class="bg-[#f8fafc] text-left text-xs font-bold uppercase tracking-[0.04em] text-[#475569]">
           <tr>
-            <th class="px-4 py-3">Назва</th>
-            <th>Тип</th>
-            <th>Статус</th>
-            <th>CPU %</th>
-            <th>RAM %</th>
-            <th>Останній сигнал</th>
-            <th>Інциденти</th>
-            <th class="pr-4 text-right">Дії</th>
+            <th class="border-b border-[#e5e9f0] px-[14px] py-3">Назва</th>
+            <th class="border-b border-[#e5e9f0] px-[14px] py-3">Тип</th>
+            <th class="border-b border-[#e5e9f0] px-[14px] py-3">Статус</th>
+            <th class="border-b border-[#e5e9f0] px-[14px] py-3 text-right">CPU %</th>
+            <th class="border-b border-[#e5e9f0] px-[14px] py-3 text-right">RAM %</th>
+            <th class="border-b border-[#e5e9f0] px-[14px] py-3">Останній сигнал</th>
+            <th class="border-b border-[#e5e9f0] px-[14px] py-3 text-right">Інциденти</th>
+            <th class="border-b border-[#e5e9f0] px-[14px] py-3 text-right">Дії</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-200">
+        <tbody>
           {#each nodes as node}
             <tr>
-              <td class="px-4 py-3 font-medium text-slate-950">
-                {node.name}
-                <p class="text-xs font-normal text-slate-700">{node.hostname || node.description || 'ім’я хоста невідоме'}</p>
+              <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle font-semibold text-[#1d4ed8]">
+                <a href={`/nodes/${node.id}`}>{node.name}</a>
+                <p class="text-xs font-normal text-slate-500">{node.hostname || node.description || 'ім’я хоста невідоме'}</p>
               </td>
-              <td>{typeLabel(node.node_type)}</td>
-              <td><StatusBadge status={node.status} /></td>
-              <td>{percent(latestMetrics[node.id]?.cpu_usage_percent)}</td>
-              <td>{percent(latestMetrics[node.id]?.ram_usage_percent)}</td>
-              <td>{shortDate(node.last_heartbeat_at)}</td>
-              <td>{incidentCounts[node.id] || 0}</td>
-              <td class="pr-4 text-right">
-                <div class="inline-flex gap-2">
-                  <a class="font-medium text-brand-700" href={`/nodes/${node.id}`}>Відкрити</a>
-                  <button class="font-medium text-red-700" on:click={() => removeNode(node)}>Видалити</button>
+              <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle text-[#1f2937]">{typeLabel(node.node_type)}</td>
+              <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle"><StatusBadge status={node.status} /></td>
+              <td class="border-b border-[#e5e9f0] px-[14px] py-4 text-right align-middle tabular-nums">{percent(latestMetrics[node.id]?.cpu_usage_percent)}</td>
+              <td class="border-b border-[#e5e9f0] px-[14px] py-4 text-right align-middle tabular-nums">{percent(latestMetrics[node.id]?.ram_usage_percent)}</td>
+              <td class="border-b border-[#e5e9f0] px-[14px] py-4 align-middle text-[#475569]">{shortDate(node.last_heartbeat_at)}</td>
+              <td class="border-b border-[#e5e9f0] px-[14px] py-4 text-right align-middle tabular-nums">{incidentCounts[node.id] || 0}</td>
+              <td class="border-b border-[#e5e9f0] px-[14px] py-4 text-right align-middle">
+                <div class="inline-flex gap-2 whitespace-nowrap">
+                  <a href={`/nodes/${node.id}`}><Button size="sm" variant="secondary">Відкрити</Button></a>
+                  <Button size="sm" variant="danger" on:click={() => removeNode(node)}>Видалити</Button>
                 </div>
               </td>
             </tr>
@@ -115,5 +114,5 @@
         </tbody>
       </table>
     </div>
-  </Card>
+  </section>
 {/if}

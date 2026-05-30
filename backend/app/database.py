@@ -11,7 +11,7 @@ class Base(DeclarativeBase):
 
 
 settings = get_settings()
-database_url = settings.database_url
+database_url = settings.database_url.strip()
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 

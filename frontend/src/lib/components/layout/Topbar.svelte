@@ -4,12 +4,11 @@
   export let onRefresh: (() => void) | undefined = undefined;
 </script>
 
-<header class="border-b border-line bg-white px-4 py-3 lg:px-6">
-  <div class="mx-auto grid max-w-[1480px] grid-cols-[1fr_auto_1fr] items-center gap-4">
-    <div></div>
-    <div class="text-center">
-      <a href="/dashboard" class="text-base font-semibold text-slate-950">Система діагностики</a>
-      <p class="mt-0.5 text-xs text-slate-600">Система діагностики обчислювальних вузлів і формування рекомендацій масштабування.</p>
+<header class="border-b border-[#d7dde6] bg-white">
+  <div class="grid min-h-[82px] grid-cols-[1fr_auto] items-center gap-4 px-6 py-4 md:px-9">
+    <div class="min-w-0">
+      <a href="/dashboard" class="block text-[18px] font-bold leading-tight text-[#111827]">Система діагностики та масштабування</a>
+      <p class="mt-2 max-w-3xl truncate text-[14px] font-normal text-[#52627a]">Віртуалізовані обчислювальні ресурси у комп'ютерних мережах</p>
     </div>
     <div class="flex justify-end">
       {#if onRefresh}

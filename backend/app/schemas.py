@@ -242,7 +242,7 @@ class SimulationScenarioRead(OrmModel):
 
 
 class DemoEnvironmentRequest(BaseModel):
-    name: str = "Demo Virtual Cluster"
+    name: str = "Демонстраційний віртуальний кластер"
 
 
 class CapacityForecastRead(OrmModel):

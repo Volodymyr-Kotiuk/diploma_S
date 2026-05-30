@@ -39,7 +39,7 @@ def run_capacity_planning(db: Session, node_id: int) -> list[models.CapacityFore
                 predicted_value=None,
                 predicted_threshold_time=None,
                 trend_direction="low_usage",
-                recommendation="Вузол використовує дуже малу частку CPU/RAM. Рекомендовано розглянути downscale або consolidation.",
+                recommendation="Вузол використовує дуже малу частку CPU/RAM. Рекомендовано розглянути зменшення ресурсів або об’єднання навантажень.",
             )
         )
     for forecast in forecasts:
@@ -59,7 +59,7 @@ def _forecast_metric(node_id: int, metrics: list[models.ResourceMetric], metric_
             predicted_value=None,
             predicted_threshold_time=None,
             trend_direction="insufficient_data",
-            recommendation="Недостатньо метрик для capacity forecast.",
+            recommendation="Недостатньо метрик для прогнозу місткості.",
         )
     values = [float(getattr(metric, metric_name) or 0) for metric in metrics]
     current = values[-1]
@@ -105,7 +105,7 @@ def _avg(metrics: list[models.ResourceMetric], attr: str) -> float:
 
 def _label(metric_name: str) -> str:
     return {
-        "cpu_usage_percent": "CPU usage",
-        "ram_usage_percent": "RAM usage",
-        "disk_usage_percent": "Disk usage",
+        "cpu_usage_percent": "Використання CPU",
+        "ram_usage_percent": "Використання RAM",
+        "disk_usage_percent": "Використання диска",
     }.get(metric_name, metric_name)

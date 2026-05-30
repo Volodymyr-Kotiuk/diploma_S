@@ -13,7 +13,7 @@ router = APIRouter(prefix="/diagnostics", tags=["diagnostics"])
 @router.post("/run/{node_id}", response_model=DiagnosticRead)
 def run_diagnostics(node_id: int, db: Session = Depends(get_db)):
     if not db.get(models.Node, node_id):
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     return run_diagnostics_for_node(db, node_id)
 
 
@@ -26,7 +26,7 @@ def list_diagnostics(db: Session = Depends(get_db)):
 def get_diagnostic(diagnostic_id: int, db: Session = Depends(get_db)):
     diagnostic = db.get(models.Diagnostic, diagnostic_id)
     if not diagnostic:
-        raise HTTPException(status_code=404, detail="Diagnostic not found")
+        raise HTTPException(status_code=404, detail="Діагностику не знайдено")
     return diagnostic
 
 
@@ -43,7 +43,7 @@ def resolve(diagnostic_id: int, db: Session = Depends(get_db)):
 def _set_status(db: Session, diagnostic_id: int, status: str):
     diagnostic = db.get(models.Diagnostic, diagnostic_id)
     if not diagnostic:
-        raise HTTPException(status_code=404, detail="Diagnostic not found")
+        raise HTTPException(status_code=404, detail="Діагностику не знайдено")
     diagnostic.status = status
     db.commit()
     db.refresh(diagnostic)

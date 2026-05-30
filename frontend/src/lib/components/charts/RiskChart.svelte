@@ -6,12 +6,12 @@
 
   function render() {
     chart?.setOption({
-      title: { text: 'Оцінка ризику', left: 8, top: 6, textStyle: { fontSize: 13, fontWeight: 700, color: '#57534e' } },
-      tooltip: { trigger: 'axis', backgroundColor: '#171717', borderColor: '#44403c', textStyle: { color: '#fafaf9' } },
-      grid: { top: 48, right: 16, left: 38, bottom: 30 },
-      xAxis: { type: 'category', data: points.map((p) => p.label), axisLabel: { color: '#78716c' } },
-      yAxis: { type: 'value', max: 100, axisLabel: { color: '#78716c' }, splitLine: { lineStyle: { color: '#e7e5e4' } } },
-      series: [{ type: 'bar', data: points.map((p) => p.value), itemStyle: { color: '#d97706', borderRadius: [2, 2, 0, 0] } }]
+      title: { text: 'Оцінка ризику', left: 0, top: 0, textStyle: { fontSize: 13, fontWeight: 600, color: '#111827' } },
+      tooltip: { trigger: 'axis', backgroundColor: '#ffffff', borderColor: '#d8dee8', borderWidth: 1, textStyle: { color: '#111827', fontSize: 12 } },
+      grid: { top: 46, right: 18, left: 38, bottom: 30 },
+      xAxis: { type: 'category', data: points.map((p) => p.label), axisTick: { show: false }, axisLabel: { color: '#64748b', fontSize: 11 } },
+      yAxis: { type: 'value', max: 100, splitNumber: 3, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: '#64748b', fontSize: 11 }, splitLine: { lineStyle: { color: '#eef2f6' } } },
+      series: [{ type: 'bar', data: points.map((p) => p.value), barMaxWidth: 34, itemStyle: { color: '#D97706', borderRadius: [3, 3, 0, 0] } }]
     });
   }
 

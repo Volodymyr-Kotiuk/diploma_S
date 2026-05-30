@@ -12,7 +12,7 @@ from app.utils.time_utils import utc_now
 rng = Random(42)
 
 
-def create_demo_environment(db: Session, name: str = "Demo Virtual Cluster") -> models.Environment:
+def create_demo_environment(db: Session, name: str = "Демонстраційний віртуальний кластер") -> models.Environment:
     existing = db.scalar(select(models.Environment).where(models.Environment.name == name).limit(1))
     if existing:
         return existing
@@ -21,17 +21,17 @@ def create_demo_environment(db: Session, name: str = "Demo Virtual Cluster") -> 
     db.commit()
     db.refresh(env)
     nodes = [
-        ("Web VM", "service", 2, 4096, 8, 16384, 80, "healthy"),
-        ("API VM", "service", 2, 4096, 8, 16384, 80, "critical"),
-        ("Database VM", "database", 4, 4096, 12, 32768, 160, "warning"),
-        ("Worker VM", "other", 4, 8192, 8, 16384, 80, "healthy"),
+        ("Веб-вузол", "service", 2, 4096, 8, 16384, 80, "healthy"),
+        ("API-вузол", "service", 2, 4096, 8, 16384, 80, "critical"),
+        ("Вузол бази даних", "database", 4, 4096, 12, 32768, 160, "warning"),
+        ("Фоновий вузол", "other", 4, 8192, 8, 16384, 80, "healthy"),
     ]
     created: dict[str, models.Node] = {}
     for node_name, role, cpu, ram, max_cpu, max_ram, disk_gb, status in nodes:
         node = models.Node(
             environment_id=env.id,
             name=node_name,
-            description="Демонстраційний virtual node.",
+            description="Демонстраційний віртуальний вузол.",
             hostname=node_name.lower().replace(" ", "-"),
             node_type="virtual_node",
             role=role,
@@ -48,10 +48,10 @@ def create_demo_environment(db: Session, name: str = "Demo Virtual Cluster") -> 
         db.commit()
         db.refresh(node)
         created[node_name] = node
-    _generate_history(db, created["Web VM"], "normal")
-    _generate_history(db, created["API VM"], "cpu_saturation")
-    _generate_history(db, created["Database VM"], "memory_pressure")
-    _generate_history(db, created["Worker VM"], "underutilization")
+    _generate_history(db, created["Веб-вузол"], "normal")
+    _generate_history(db, created["API-вузол"], "cpu_saturation")
+    _generate_history(db, created["Вузол бази даних"], "memory_pressure")
+    _generate_history(db, created["Фоновий вузол"], "underutilization")
     for node in created.values():
         run_diagnostics_for_node(db, node.id)
     return env
@@ -60,7 +60,7 @@ def create_demo_environment(db: Session, name: str = "Demo Virtual Cluster") -> 
 def create_scenario(db: Session, payload: dict) -> models.SimulationScenario:
     env = db.get(models.Environment, payload["environment_id"])
     if not env:
-        raise HTTPException(status_code=404, detail="Environment not found")
+        raise HTTPException(status_code=404, detail="Середовище не знайдено")
     scenario = models.SimulationScenario(**payload, status="created")
     db.add(scenario)
     db.commit()
@@ -71,10 +71,10 @@ def create_scenario(db: Session, payload: dict) -> models.SimulationScenario:
 def run_scenario(db: Session, scenario_id: int) -> models.SimulationScenario:
     scenario = db.get(models.SimulationScenario, scenario_id)
     if not scenario:
-        raise HTTPException(status_code=404, detail="Scenario not found")
+        raise HTTPException(status_code=404, detail="Сценарій не знайдено")
     node = db.get(models.Node, scenario.target_node_id) if scenario.target_node_id else _first_env_node(db, scenario.environment_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Target node not found")
+        raise HTTPException(status_code=404, detail="Цільовий вузол не знайдено")
     scenario.status = "running"
     scenario.started_at = utc_now()
     db.commit()
@@ -90,7 +90,7 @@ def run_scenario(db: Session, scenario_id: int) -> models.SimulationScenario:
 def stop_scenario(db: Session, scenario_id: int) -> models.SimulationScenario:
     scenario = db.get(models.SimulationScenario, scenario_id)
     if not scenario:
-        raise HTTPException(status_code=404, detail="Scenario not found")
+        raise HTTPException(status_code=404, detail="Сценарій не знайдено")
     scenario.status = "stopped"
     scenario.finished_at = utc_now()
     db.commit()
@@ -101,13 +101,13 @@ def stop_scenario(db: Session, scenario_id: int) -> models.SimulationScenario:
 def run_node_scenario(db: Session, node_id: int, scenario_type: str, duration_seconds: int = 300, intensity: float = 0.85) -> models.SimulationScenario:
     node = db.get(models.Node, node_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     if node.node_type not in {"virtual_node", "simulated_vm"}:
-        raise HTTPException(status_code=400, detail="Scenario can be run only for virtual nodes")
+        raise HTTPException(status_code=400, detail="Сценарій можна запускати тільки для віртуальних вузлів")
     if not node.environment_id:
         env = db.scalar(select(models.Environment).where(models.Environment.environment_type == "simulated").limit(1))
         if not env:
-            env = models.Environment(name="Virtual Nodes", description="Node-centric virtual infrastructure.", environment_type="simulated", status="healthy")
+            env = models.Environment(name="Віртуальні вузли", description="Віртуальна інфраструктура для окремих вузлів.", environment_type="simulated", status="healthy")
             db.add(env)
             db.commit()
             db.refresh(env)
@@ -116,7 +116,7 @@ def run_node_scenario(db: Session, node_id: int, scenario_type: str, duration_se
     scenario = models.SimulationScenario(
         environment_id=node.environment_id,
         target_node_id=node.id,
-        name=scenario_type.replace("_", " ").title(),
+        name=_scenario_label(scenario_type),
         scenario_type=scenario_type,
         duration_seconds=duration_seconds,
         intensity=intensity,
@@ -136,6 +136,20 @@ def run_node_scenario(db: Session, node_id: int, scenario_type: str, duration_se
 
 def _first_env_node(db: Session, environment_id: int) -> models.Node | None:
     return db.scalar(select(models.Node).where(models.Node.environment_id == environment_id).limit(1))
+
+
+def _scenario_label(scenario_type: str) -> str:
+    return {
+        "cpu_saturation": "Перевантаження CPU",
+        "memory_pressure": "Нестача пам’яті",
+        "swap_pressure": "Навантаження підкачки",
+        "disk_io_bottleneck": "Обмеження дискових операцій",
+        "network_pressure": "Навантаження мережі",
+        "resource_overcommit": "Перевиділення ресурсів",
+        "underutilization": "Недовикористання ресурсів",
+        "thermal_risk": "Температурний ризик",
+        "mixed_resource_degradation": "Змішана деградація ресурсів",
+    }.get(scenario_type, scenario_type)
 
 
 def _generate_history(db: Session, node: models.Node, scenario_type: str, duration: int = 300, intensity: float = 0.85) -> None:

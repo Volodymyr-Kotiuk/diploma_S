@@ -19,7 +19,7 @@ def normalize_server_url(server_url: str) -> str:
 def create_token_for_node(db: Session, node_id: int, server_url: str = "http://localhost:8000") -> dict:
     node = db.get(models.Node, node_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     token = generate_token()
     record = models.AgentToken(node_id=node_id, token_hash=hash_token(token), token_preview=preview_token(token), is_active=True)
     db.add(record)
@@ -39,7 +39,7 @@ def validate_agent_token(db: Session, node_id: int, token: str) -> models.AgentT
         )
     )
     if not record:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid agent token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Недійсний токен агента")
     record.last_used_at = datetime.utcnow()
     return record
 
@@ -49,7 +49,7 @@ def register_agent_node(db: Session, payload: dict, server_url: str = "http://lo
     if not environment_id:
         env = db.scalar(select(models.Environment).where(models.Environment.environment_type == "remote").limit(1))
         if not env:
-            env = models.Environment(name="Remote Agents", description="Вузли, які надсилають метрики через AutoInfraDiag Agent.", environment_type="remote", status="healthy")
+            env = models.Environment(name="Віддалені агенти", description="Вузли, які надсилають метрики через агент AutoInfraDiag.", environment_type="remote", status="healthy")
             db.add(env)
             db.commit()
             db.refresh(env)
@@ -76,7 +76,7 @@ def heartbeat(db: Session, payload: dict) -> models.Node:
     validate_agent_token(db, payload["node_id"], payload["token"])
     node = db.get(models.Node, payload["node_id"])
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     node.status = "online"
     node.last_heartbeat_at = datetime.utcnow()
     node.hostname = payload.get("hostname") or node.hostname

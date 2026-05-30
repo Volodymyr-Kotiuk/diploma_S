@@ -11,6 +11,8 @@ from app.database import get_db
 from app.schemas import CapacityForecastRead, DiagnosticRead, NodeCreate, NodeRead, NodeUpdate, RecommendationRead, ResourceMetricRead
 from app.services.capacity_planner import run_capacity_planning
 from app.services.metrics_service import list_metrics
+from app.services.recommendation_engine import ACTIVE_STATUSES as ACTIVE_RECOMMENDATION_STATUSES
+from app.services.recommendation_engine import localize_legacy_recommendation
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -49,7 +51,7 @@ def create_node(payload: NodeCreate, db: Session = Depends(get_db)):
 def get_node(node_id: int, db: Session = Depends(get_db)):
     node = db.get(models.Node, node_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     return node
 
 
@@ -57,7 +59,7 @@ def get_node(node_id: int, db: Session = Depends(get_db)):
 def update_node(node_id: int, payload: NodeUpdate, db: Session = Depends(get_db)):
     node = db.get(models.Node, node_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(node, key, value)
     db.commit()
@@ -69,7 +71,7 @@ def update_node(node_id: int, payload: NodeUpdate, db: Session = Depends(get_db)
 def delete_node(node_id: int, db: Session = Depends(get_db)):
     node = db.get(models.Node, node_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     db.delete(node)
     db.commit()
     return {"status": "deleted"}
@@ -87,7 +89,16 @@ def node_diagnostics(node_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{node_id}/recommendations", response_model=list[RecommendationRead])
 def node_recommendations(node_id: int, db: Session = Depends(get_db)):
-    return db.scalars(select(models.Recommendation).where(models.Recommendation.node_id == node_id).order_by(desc(models.Recommendation.created_at), desc(models.Recommendation.id))).all()
+    rows = db.scalars(
+        select(models.Recommendation)
+        .where(
+            models.Recommendation.node_id == node_id,
+            models.Recommendation.status.in_(ACTIVE_RECOMMENDATION_STATUSES),
+        )
+        .order_by(desc(models.Recommendation.created_at), desc(models.Recommendation.id))
+        .limit(1)
+    ).all()
+    return [localize_legacy_recommendation(row) for row in rows]
 
 
 @router.get("/{node_id}/capacity", response_model=list[CapacityForecastRead])
@@ -113,7 +124,7 @@ def export_node_metrics_csv(node_id: int, db: Session = Depends(get_db)):
 def export_node_json(node_id: int, db: Session = Depends(get_db)):
     node = db.get(models.Node, node_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     payload = {
         "node": node,
         "metrics": list_metrics(db, node_id, limit=5000),

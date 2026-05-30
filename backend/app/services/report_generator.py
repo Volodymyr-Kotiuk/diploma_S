@@ -13,15 +13,17 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.config import get_settings
+from app.services.recommendation_engine import localize_legacy_recommendation
 from app.utils.time_utils import utc_now
 
 _FONT_NAMES: tuple[str, str] | None = None
+ACTIVE_RECOMMENDATION_STATUSES = ("new", "accepted")
 
 
 def generate_environment_report(db: Session, environment_id: int) -> models.Report:
     env = db.get(models.Environment, environment_id)
     if not env:
-        raise HTTPException(status_code=404, detail="Environment not found")
+        raise HTTPException(status_code=404, detail="Середовище не знайдено")
     nodes = db.scalars(select(models.Node).where(models.Node.environment_id == environment_id)).all()
     incidents = db.scalars(
         select(models.Incident)
@@ -33,7 +35,10 @@ def generate_environment_report(db: Session, environment_id: int) -> models.Repo
     recommendations = db.scalars(
         select(models.Recommendation)
         .join(models.Node, models.Node.id == models.Recommendation.node_id)
-        .where(models.Node.environment_id == environment_id)
+        .where(
+            models.Node.environment_id == environment_id,
+            models.Recommendation.status.in_(ACTIVE_RECOMMENDATION_STATUSES),
+        )
         .order_by(desc(models.Recommendation.created_at))
         .limit(50)
     ).all()
@@ -42,7 +47,7 @@ def generate_environment_report(db: Session, environment_id: int) -> models.Repo
         summary=f"Тип: {env.environment_type}. Статус: {env.status}. Вузлів: {len(nodes)}.",
         nodes=nodes,
         incidents=incidents,
-        recommendations=recommendations,
+        recommendations=_current_recommendations(recommendations),
         latest_metrics=_latest_metrics(db, nodes),
         latest_diagnostics=_latest_diagnostics(db, nodes),
         capacity_forecasts=_capacity_forecasts(db, nodes),
@@ -53,9 +58,17 @@ def generate_environment_report(db: Session, environment_id: int) -> models.Repo
 def generate_node_report(db: Session, node_id: int) -> models.Report:
     node = db.get(models.Node, node_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     incidents = db.scalars(select(models.Incident).where(models.Incident.node_id == node_id).order_by(desc(models.Incident.started_at)).limit(50)).all()
-    recommendations = db.scalars(select(models.Recommendation).where(models.Recommendation.node_id == node_id).order_by(desc(models.Recommendation.created_at)).limit(50)).all()
+    recommendations = db.scalars(
+        select(models.Recommendation)
+        .where(
+            models.Recommendation.node_id == node_id,
+            models.Recommendation.status.in_(ACTIVE_RECOMMENDATION_STATUSES),
+        )
+        .order_by(desc(models.Recommendation.created_at), desc(models.Recommendation.id))
+        .limit(1)
+    ).all()
     story = _pdf_report(
         title=f"Звіт вузла: {node.name}",
         summary=f"Тип: {node.node_type}. Роль: {node.role}. Статус: {node.status}.",
@@ -116,6 +129,17 @@ def _capacity_forecasts(db: Session, nodes: list[models.Node]) -> list[models.Ca
     return rows
 
 
+def _current_recommendations(rows: list[models.Recommendation]) -> list[models.Recommendation]:
+    current: list[models.Recommendation] = []
+    seen: set[int] = set()
+    for row in rows:
+        if row.node_id in seen:
+            continue
+        seen.add(row.node_id)
+        current.append(row)
+    return current
+
+
 def _pdf_report(
     title: str,
     summary: str,
@@ -127,6 +151,7 @@ def _pdf_report(
     capacity_forecasts: list[models.CapacityForecast],
 ) -> list:
     styles = _styles()
+    recommendations = [localize_legacy_recommendation(rec) for rec in recommendations]
     timestamps = [metric.timestamp for metric in latest_metrics.values()]
     period = f"до {_fmt(max(timestamps))}" if timestamps else "метрики ще не зібрані"
 
@@ -402,7 +427,7 @@ def _status_label(value: str | None) -> str:
         "healthy": "справний",
         "warning": "попередження",
         "critical": "критичний",
-        "open": "відкритий",
+        "open": "активний",
         "acknowledged": "підтверджений",
         "resolved": "закритий",
         "new": "нова",
@@ -450,8 +475,21 @@ def _root_cause_label(value: str | None) -> str:
 
 
 def _metric_label(value: str | None) -> str:
-    return {"cpu_usage_percent": "CPU", "ram_usage_percent": "RAM", "disk_usage_percent": "Диск"}.get(value or "", value or "—")
+    return {
+        "cpu_usage_percent": "CPU",
+        "ram_usage_percent": "RAM",
+        "disk_usage_percent": "Диск",
+        "underutilization": "Недовикористання",
+    }.get(value or "", value or "—")
 
 
 def _trend_label(value: str | None) -> str:
-    return {"increasing": "зростає", "decreasing": "спадає", "stable": "стабільний"}.get(value or "", value or "—")
+    return {
+        "increasing": "зростає",
+        "decreasing": "спадає",
+        "stable": "стабільний",
+        "up": "зростає",
+        "down": "спадає",
+        "low_usage": "низьке використання",
+        "insufficient_data": "недостатньо даних",
+    }.get(value or "", value or "—")

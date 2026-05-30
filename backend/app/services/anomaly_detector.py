@@ -37,7 +37,7 @@ def detect_anomaly(metrics: list[models.ResourceMetric]) -> dict:
             "mode": "isolation_forest",
             "is_anomaly": bool(model.predict(data[-1:])[0] == -1),
             "anomaly_score": anomaly_score,
-            "comment": "IsolationForest позначив останній стан як нетиповий." if anomaly_score > 55 else "Суттєвої ML-аномалії не виявлено.",
+            "comment": "Модель аналізу позначила останній стан як нетиповий." if anomaly_score > 55 else "Суттєвої аномалії не виявлено.",
         }
     except Exception:
         return _rule_based(metrics)
@@ -58,5 +58,5 @@ def _rule_based(metrics: list[models.ResourceMetric]) -> dict:
         "mode": "rule_based",
         "is_anomaly": score > 85,
         "anomaly_score": round(float(score), 2),
-        "comment": "Використано rule-based fallback через малу кількість метрик.",
+        "comment": "Використано правила аналізу через малу кількість метрик.",
     }

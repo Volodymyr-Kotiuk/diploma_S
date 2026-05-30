@@ -14,12 +14,14 @@
 
 body {
   margin: 0;
-  background: #f5f6f8;
+  background: #f3f5f8;
   color: #111827;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .dark body {
-  background: #f5f6f8;
+  background: #f3f5f8;
   color: #111827;
 }
 
@@ -33,7 +35,7 @@ textarea {
 input,
 select,
 textarea {
-  border-radius: 4px !important;
+  border-radius: 6px !important;
   border-color: #cbd5e1 !important;
   background: #ffffff !important;
   color: #111827 !important;
@@ -43,9 +45,8 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid #1d4ed8;
-  outline-offset: 1px;
-  border-color: #1d4ed8 !important;
+  outline: none;
+  border-color: #2563eb !important;
 }
 
 .soft-scrollbar::-webkit-scrollbar {
@@ -54,21 +55,40 @@ textarea:focus {
 }
 
 .soft-scrollbar::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #a8b1c2;
   border-radius: 999px;
 }
 
 .ops-panel {
-  border: 1px solid #e2e8f0;
+  border: 1px solid #d7dde6;
   background: #ffffff;
-  box-shadow: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 .dark .ops-panel {
-  border-color: #cbd5e1;
+  border-color: #d7dde6;
   background: #ffffff;
 }
 
 table {
   color: #111827;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th {
+  white-space: nowrap;
+}
+
+td,
+th {
+  vertical-align: middle;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+a {
+  color: inherit;
 }

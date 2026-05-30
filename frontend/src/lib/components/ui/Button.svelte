@@ -5,19 +5,19 @@
   export let className = '';
 
   const variants = {
-    primary: 'bg-brand-700 text-white border-brand-700',
-    secondary: 'bg-white text-slate-900 border-line',
-    ghost: 'bg-transparent text-slate-800 border-line',
-    danger: 'bg-red-700 text-white border-red-700'
+    primary: 'bg-[#2F4FDC] text-white border-[#2F4FDC]',
+    secondary: 'bg-white text-[#1f2937] border-[#cbd5e1]',
+    ghost: 'bg-white text-[#1f2937] border-[#cbd5e1]',
+    danger: 'bg-[#DC2626] text-white border-[#DC2626]'
   };
   const sizes = {
-    sm: 'h-8 px-3 text-sm',
-    md: 'h-9 px-4 text-sm'
+    sm: 'h-[34px] px-3 text-sm',
+    md: 'h-10 px-4 text-sm'
   };
 </script>
 
 <button
-  class={`inline-flex items-center justify-center gap-2 rounded border font-medium disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
+  class={`inline-flex items-center justify-center gap-1.5 rounded-md border font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
   {disabled}
   on:click
   {...$$restProps}

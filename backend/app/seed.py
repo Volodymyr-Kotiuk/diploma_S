@@ -9,4 +9,4 @@ def seed_demo_if_empty(db: Session) -> None:
     exists = db.scalar(select(models.Node.id).where(models.Node.node_type != "local_host").limit(1))
     if exists:
         return
-    create_demo_environment(db, "Demo Virtual Cluster")
+    create_demo_environment(db, "Демонстраційний віртуальний кластер")

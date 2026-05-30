@@ -27,7 +27,7 @@ def create_environment(payload: EnvironmentCreate, db: Session = Depends(get_db)
 def get_environment(environment_id: int, db: Session = Depends(get_db)):
     env = db.get(models.Environment, environment_id)
     if not env:
-        raise HTTPException(status_code=404, detail="Environment not found")
+        raise HTTPException(status_code=404, detail="Середовище не знайдено")
     return env
 
 
@@ -35,7 +35,7 @@ def get_environment(environment_id: int, db: Session = Depends(get_db)):
 def update_environment(environment_id: int, payload: EnvironmentUpdate, db: Session = Depends(get_db)):
     env = db.get(models.Environment, environment_id)
     if not env:
-        raise HTTPException(status_code=404, detail="Environment not found")
+        raise HTTPException(status_code=404, detail="Середовище не знайдено")
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(env, key, value)
     db.commit()
@@ -47,7 +47,7 @@ def update_environment(environment_id: int, payload: EnvironmentUpdate, db: Sess
 def delete_environment(environment_id: int, db: Session = Depends(get_db)):
     env = db.get(models.Environment, environment_id)
     if not env:
-        raise HTTPException(status_code=404, detail="Environment not found")
+        raise HTTPException(status_code=404, detail="Середовище не знайдено")
     db.delete(env)
     db.commit()
     return {"status": "deleted"}

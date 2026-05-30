@@ -14,7 +14,7 @@ router = APIRouter(tags=["node-ingest"])
 def ingest_agent_metric(payload: AgentMetricsRequest, db: Session = Depends(get_db)):
     node = db.get(models.Node, payload.node_id)
     if not node:
-        raise HTTPException(status_code=404, detail="Node not found")
+        raise HTTPException(status_code=404, detail="Вузол не знайдено")
     validate_agent_token(db, payload.node_id, payload.token)
     data = payload.model_dump(exclude={"token"})
     return create_metric(db, data, run_analysis=True)
