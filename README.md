@@ -1,116 +1,102 @@
 # AutoInfraDiag
 
-AutoInfraDiag - система діагностики обчислювальних вузлів і формування рекомендацій масштабування.
+AutoInfraDiag — дипломний full-stack проєкт для діагностики та рекомендацій масштабування віртуалізованих обчислювальних ресурсів.
 
-Ця папка підготовлена як окремий GitHub-ready репозиторій для деплою:
+## Що реалізовано
 
-- backend: Render Web Service через Docker;
-- frontend: Vercel Static/SvelteKit project;
-- database: PostgreSQL, наприклад Supabase;
-- env-файли не потрібні, змінні задаються у Render та Vercel Environment Variables.
+- FastAPI backend з SQLAlchemy 2, SQLite локально і PostgreSQL/Supabase через `DATABASE_URL`.
+- Node-centric модель: Agent Node для реального ПК/сервера і Virtual Node для змодельованого ресурсу.
+- Python agent з `psutil`, heartbeat, metrics, retry і token auth.
+- Virtual node сценарії для CPU overload, memory pressure, disk bottleneck, network pressure і underutilization.
+- Diagnosis engine з root cause analysis, severity, confidence, risk score і evidence JSON.
+- Recommendation engine українською мовою з action steps.
+- Incident log, capacity planner, HTML reports, CSV/JSON export.
+- SvelteKit + TypeScript + Tailwind CSS frontend українською мовою з ECharts-графіками.
 
-## Структура
+## Backend локально
 
-```text
-backend/       FastAPI backend, Dockerfile, Alembic, SQLAlchemy
-frontend/      SvelteKit frontend, Vercel config
-agent/         Python agent для реального ПК/сервера
-render.yaml    Render blueprint тільки для backend
-.gitignore     виключає локальні env, БД, build, node_modules, reports
+```bash
+cd autoinfradiag/backend
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp ../.env.example .env
+alembic upgrade head
+uvicorn app.main:app --reload
 ```
 
-## 1. Завантаження на GitHub
+API: `http://localhost:8000/api`
 
-1. Створи новий GitHub repository.
-2. Завантаж у нього вміст цієї папки.
-3. Не додавай локальні `.env`, `.db`, `node_modules`, `build`, `.svelte-kit`, `.venv`.
+## Frontend локально
 
-## 2. Backend на Render
+```bash
+cd autoinfradiag/frontend
+npm install
+cp ../.env.example .env
+npm run dev
+```
 
-Варіант A - через `render.yaml`:
+UI: `http://localhost:5173`
 
-1. У Render створи Blueprint.
-2. Обери GitHub repository з цим проєктом.
-3. Render прочитає `render.yaml`.
-4. Після створення сервісу задай Environment Variables.
+## Remote agent
 
-Варіант B - вручну:
+```bash
+cd autoinfradiag/agent
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python agent.py --server http://localhost:8000 --node-id NODE_ID --token TOKEN --interval 5
+```
 
-- Service Type: Web Service
-- Environment: Docker
-- Root Directory: `backend`
-- Health Check Path: `/api/health`
+Token і команду можна отримати на сторінці `/nodes/add` після вибору `Agent Node`.
 
-Environment Variables у Render:
+## Supabase PostgreSQL
 
-```text
+Створіть Supabase project, відкрийте Connect і скопіюйте PostgreSQL connection string. Для Render Web Service, якщо direct IPv6 недоступний, використовуйте Supabase session pooler. Встановіть:
+
+```bash
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/postgres
-ENVIRONMENT=production
-API_PREFIX=/api
-APP_NAME=AutoInfraDiag
-BACKEND_CORS_ORIGINS=https://your-frontend.vercel.app
-PUBLIC_BACKEND_URL=https://your-backend.onrender.com
-SECRET_KEY=replace-with-long-random-secret
-REPORTS_DIR=reports
+BACKEND_CORS_ORIGINS=https://your-frontend-domain.com
 ```
 
-`PUBLIC_BACKEND_URL` використовується для генерації команди запуску agent.
+Після встановлення `DATABASE_URL` застосуйте схему:
 
-Перевірка backend:
-
-```text
-https://your-backend.onrender.com/api/health
+```bash
+cd autoinfradiag/backend
+alembic upgrade head
 ```
 
-## 3. Frontend на Vercel
+## Demo scenario
 
-1. У Vercel створи New Project.
-2. Обери той самий GitHub repository.
-3. Укажи Root Directory: `frontend`.
-4. Vercel використає `frontend/vercel.json`.
+1. Запустіть backend і frontend.
+2. Відкрийте `/dashboard`.
+3. Demo data створюється автоматично, якщо база порожня.
+4. Відкрийте `/nodes/add`, створіть `Virtual Node`.
+5. Перейдіть у `/nodes/{id}`, натисніть “Запустити сценарій” і перевірте metrics, diagnosis, evidence, incidents та recommendations.
 
-Якщо налаштовуєш вручну:
+## Основні endpoints
 
-- Framework Preset: Other
-- Install Command: `npm install`
-- Build Command: `npm run build`
-- Output Directory: `build`
+- `GET /api/health`
+- `GET /api/dashboard/summary`
+- `GET|POST /api/nodes`
+- `POST /api/heartbeat`
+- `POST /api/metrics`
+- `POST /api/agents/register`
+- `POST /api/agents/heartbeat`
+- `POST /api/agents/metrics`
+- `POST /api/simulation/nodes/{node_id}/run`
+- `POST /api/diagnostics/run/{node_id}`
+- `GET /api/incidents`
+- `GET /api/recommendations`
+- `POST /api/reports/node/{node_id}`
+- `GET /api/nodes/{id}/export/csv`
+- `GET /api/nodes/{id}/export/json`
 
-Environment Variables у Vercel:
+## Docker Compose
 
-```text
-VITE_API_BASE_URL=https://your-backend.onrender.com/api
+```bash
+cd autoinfradiag
+docker compose up --build
 ```
 
-Після отримання Vercel URL онови на Render:
-
-```text
-BACKEND_CORS_ORIGINS=https://your-frontend.vercel.app
-```
-
-Після цього зроби Redeploy backend.
-
-## 4. Agent Node
-
-У вебінтерфейсі створи Agent Node. Система покаже:
-
-```text
-pip install psutil requests
-python agent.py --server https://your-backend.onrender.com --node-id NODE_ID --token TOKEN --interval 5
-```
-
-Файл `agent.py` можна завантажити з вебінтерфейсу кнопкою `Завантажити agent.py`.
-
-## 5. Virtual Node
-
-У вебінтерфейсі створи Virtual Node і запусти сценарій навантаження на сторінці вузла. Метрики, діагностика, інциденти та рекомендації показуються тільки в контексті конкретного вузла.
-
-## 6. Важливий порядок деплою
-
-1. Створи PostgreSQL базу.
-2. Задеплой backend на Render.
-3. Задай Render Environment Variables.
-4. Задеплой frontend на Vercel.
-5. Задай `VITE_API_BASE_URL` у Vercel.
-6. У Render задай `BACKEND_CORS_ORIGINS` як Vercel URL.
-7. Перезапусти backend і frontend.
+Frontend буде доступний на `http://localhost:3000`, backend на `http://localhost:8000`.

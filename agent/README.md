@@ -1,14 +1,23 @@
-# AutoInfraDiag Agent
+# AutoInfraDiag Remote Agent
 
-Python agent збирає системні метрики через `psutil` і надсилає heartbeat та metrics у backend.
-
-У вебінтерфейсі після створення Agent Node буде доступна команда запуску з правильним `node-id` і `token`.
+Agent збирає системні метрики через `psutil` і надсилає heartbeat та metrics у backend AutoInfraDiag.
 
 ## Запуск
 
 ```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-python agent.py --server https://your-backend.onrender.com --node-id NODE_ID --token TOKEN --interval 5
+python agent.py --server http://localhost:8000 --node-id NODE_ID --token TOKEN --interval 5
 ```
 
-Agent не виконує shell-команди, не зупиняє процеси і не змінює ресурси вузла. Він тільки надсилає метрики у backend.
+На Windows:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python agent.py --server http://localhost:8000 --node-id NODE_ID --token TOKEN --interval 5
+```
+
+Agent не виконує shell-команди, не зупиняє процеси і не змінює ресурси вузла. Він тільки надсилає `POST /api/heartbeat` та `POST /api/metrics`.
